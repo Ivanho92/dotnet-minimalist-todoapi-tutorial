@@ -28,8 +28,8 @@ namespace TodoApi.Todos
 
             static async Task<IResult> GetTodo(int id, TodoDb db)
             {
-                return await db.Todos.FindAsync(id)
-                    is Todo todo
+                var todo = await db.Todos.FindAsync(id);
+                return todo is not null
                         ? TypedResults.Ok(new TodoItemDTO(todo))
                         : TypedResults.NotFound();
             }
@@ -48,9 +48,9 @@ namespace TodoApi.Todos
                 db.Todos.Add(todoItem);
                 await db.SaveChangesAsync();
 
-                var todoItemDTO = new TodoItemDTO(todoItem);
+                var todoItemDto = new TodoItemDTO(todoItem);
 
-                return TypedResults.Created($"/todoitems/{todoItemDTO.Id}", todoItemDTO);
+                return TypedResults.Created($"/todoitems/{todoItemDto.Id}", todoItemDto);
             }
 
             static async Task<IResult> UpdateTodo(int id, TodoItemDTO inputTodo, TodoDb db)
@@ -69,14 +69,16 @@ namespace TodoApi.Todos
 
             static async Task<IResult> DeleteTodo(int id, TodoDb db)
             {
-                if (await db.Todos.FindAsync(id) is Todo todo)
+                var todo = await db.Todos.FindAsync(id);
+                
+                if (todo is null)
                 {
-                    db.Todos.Remove(todo);
-                    await db.SaveChangesAsync();
-                    return TypedResults.NoContent();
+                    return TypedResults.NotFound();
                 }
-
-                return TypedResults.NotFound();
+                
+                db.Todos.Remove(todo);
+                await db.SaveChangesAsync();
+                return TypedResults.NoContent();
             }
 
             static async Task<IResult> PatchTodo(int id, TodoPatch patch, TodoDb db)

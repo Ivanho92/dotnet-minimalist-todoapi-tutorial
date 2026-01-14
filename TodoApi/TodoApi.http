@@ -18,7 +18,8 @@ Content-Type: application/json
 
 {
   "id": 1,
-  "name": "feed fish"
+  "name": "feed fish",
+  "isCompleted": true
 }
 
 ###
